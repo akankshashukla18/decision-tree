@@ -1,4 +1,4 @@
-# SVM Spam Classifier — Streamlit Safe Version
+# SVM Spam Classifier using Streamlit
 
 import streamlit as st
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -31,32 +31,38 @@ emails = [
     "Let’s finalize the budget proposal by Friday"
 ]
 
-labels = [1]*8 + [0]*12
+# 1 = Spam, 0 = Not Spam
+labels = [1] * 8 + [0] * 12
 
 @st.cache_resource
 def train_model():
     vectorizer = TfidfVectorizer(
         lowercase=True,
         stop_words='english',
-        ngram_range=(1,2),
+        ngram_range=(1, 2),
         max_df=0.9
     )
 
     X = vectorizer.fit_transform(emails)
+
     X_train, X_test, y_train, y_test = train_test_split(
-        X, labels, test_size=0.25, random_state=42, stratify=labels
+        X,
+        labels,
+        test_size=0.25,
+        random_state=42,
+        stratify=labels
     )
 
     model = LinearSVC(C=1.0)
     model.fit(X_train, y_train)
 
-    accuracy = accuracy_score(y_test, model.predict(X_test))
-    return vectorizer, model, accuracy
+    acc = accuracy_score(y_test, model.predict(X_test))
+    return vectorizer, model, acc
 
 vectorizer, svm_model, acc = train_model()
 
-st.success(f"Model trained successfully ✅")
-st.write(f"Accuracy: **{acc:.2f}**")
+st.success("Model trained successfully")
+st.write(f"Accuracy: {acc:.2f}")
 
 user_email = st.text_area("Enter an email message:")
 
@@ -68,7 +74,8 @@ if st.button("Check Spam"):
         prediction = svm_model.predict(email_vec)
 
         if prediction[0] == 1:
-            st.error("🚨 This email is SPAM")
+            st.error("This email is SPAM")
         else:
-            st.success("✅ This email is NOT spam")
+            st.success("This email is NOT spam")
+
 
